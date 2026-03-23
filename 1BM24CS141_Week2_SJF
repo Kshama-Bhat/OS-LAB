@@ -1,0 +1,103 @@
+Write a C program to simulate the following CPU scheduling algorithm to find turnaround time and waiting time - SJF
+
+#include <stdio.h>
+#include <limits.h>
+int main() {
+    int n;
+    printf("no of processes: ");
+    scanf("%d", &n);
+    int at[n], bt[n];
+    for(int i=0;i<n;i++) {
+        printf("AT of P%d: ", i+1);
+        scanf("%d", &at[i]);
+        printf("BT of P%d: ", i+1);
+        scanf("%d", &bt[i]);
+    }
+    //for non preemptive sjf
+    int ct[n], tat[n], wt[n], vis[n];
+    for(int i=0;i<n;i++) vis[i]=0;
+    int curr=0, com=0;
+    float ttat=0, twt=0;
+    while(com<n) {
+        int pos=-1, m=INT_MAX;
+        for(int i=0;i<n;i++) {
+            if(at[i]<=curr && vis[i]==0) {
+                if(bt[i]<m) {
+                    m=bt[i];
+                    pos=i;
+                }
+                else if(bt[i]==m) {
+                    if(at[i] < at[pos])
+                        pos=i;
+                }
+            }
+        }
+        if(pos==-1) {
+            curr++;
+        } 
+        else {
+            curr += bt[pos];
+            ct[pos] = curr;
+            tat[pos] = ct[pos] - at[pos];
+            wt[pos] = tat[pos] - bt[pos];
+            vis[pos] = 1;
+            com++;
+            ttat += tat[pos];
+            twt += wt[pos];
+        }
+    }
+    printf("\nSJF Non-Preemptive\n");
+    printf("PID\tAT\tBT\tCT\tTAT\tWT\n");
+    for(int i=0;i<n;i++) {
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
+        i+1, at[i], bt[i], ct[i], tat[i], wt[i]);
+    }
+    printf("Average TAT: %.2f\n", ttat/n);
+    printf("Average WT : %.2f\n", twt/n);
+    //for preemptive sjf(srtf)
+    int rbt[n], ct2[n], tat2[n], wt2[n];
+    for(int i=0;i<n;i++) rbt[i]=bt[i];
+    curr=0; 
+    com=0; 
+    ttat=0; 
+    twt=0;
+    while(com<n) {
+        int pos=-1, m=INT_MAX;
+        for(int i=0;i<n;i++) {
+            if(at[i]<=curr && rbt[i]>0) {
+                if(rbt[i]<m) {
+                    m=rbt[i];
+                    pos=i;
+                }
+                else if(rbt[i]==m) {
+                    if(at[i] < at[pos])
+                        pos=i;
+                }
+            }
+        }
+        if(pos==-1) {
+            curr++;
+        } 
+        else {
+            rbt[pos]--;
+            curr++;
+            if(rbt[pos]==0) {
+                ct2[pos] = curr;
+                tat2[pos] = ct2[pos] - at[pos];
+                wt2[pos] = tat2[pos] - bt[pos];
+                com++;
+                ttat += tat2[pos];
+                twt += wt2[pos];
+            }
+        }
+    }
+    printf("\nSJF Preemptive (SRTF)\n");
+    printf("PID\tAT\tBT\tCT\tTAT\tWT\n");
+    for(int i=0;i<n;i++) {
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\n",
+        i+1, at[i], bt[i], ct2[i], tat2[i], wt2[i]);
+    }
+    printf("avg tat: %.2f\n", ttat/n);
+    printf("avg wt: %.2f\n", twt/n);
+    return 0;
+}
